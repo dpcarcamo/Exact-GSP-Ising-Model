@@ -1,9 +1,17 @@
 clear
 clc
 %%
-addpath('Stringer Data\Data')
-addpath("Refined Code\")
+currentPath = pwd;
+folders = split(currentPath, '\');
+newPath = join(folders(1:length(folders)-2),"\");
+
+addpath(strcat(newPath{1} , '\Stringer Data\Data'))
 ExpData = matfile('natimg2800_M170717_MP033_2017-08-20.mat');
+
+% Add Helper Function to Path
+newPath = join(folders(1:length(folders)-1),"\");
+addpath(strcat(newPath{1}, '\Helper Function'))
+
 
 
 %

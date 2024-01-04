@@ -1,6 +1,12 @@
 clear
 clc
 
+currentPath = pwd;
+folders = split(currentPath, '\');
+newPath = join(folders(1:length(folders)-2),"\");
+
+addpath(strcat(newPath{1} , '\Model Data'))
+
 load("natimg2800_2017-08-20_Fitting.mat")
 
 
