@@ -6,6 +6,7 @@ folders = split(currentPath, '\');
 newPath = join(folders(1:length(folders)-2),"\");
 
 listing = dir(strcat(newPath{1} , '\Stringer Data\Natimg2800'));
+addpath(strcat(newPath{1} , '\Stringer Data\Natimg2800'))
 
 % Add Helper Function to Path
 newPath = join(folders(1:length(folders)-1),"\");
@@ -75,7 +76,7 @@ for namenum = 3:9
       
     
     count = 1;
-    for j = unique([round(logspace(log10(2),log10(num_nuerons/500), 40)) ])%  , round(logspace(log10(num_nuerons/100),log10(num_nuerons/10), 4))])
+    for j = unique([round(logspace(log10(2),log10(num_nuerons/10), 40))  , round(logspace(log10(num_nuerons/10),log10(num_nuerons), 4))])
         i = count;
 
         centerspins = [];
@@ -146,7 +147,7 @@ for namenum = 3:9
             % Find Optimal GSP
             
             tic
-            [hGSP, JGSP, HGSP, NewEnt2] = find_GSP_update(reduceddatamean, reduceddatacorr);
+            [hGSP, JGSP, HGSP] = find_GSP_update(reduceddatamean, reduceddatacorr);
             toc
     
             %Entropy Drops
