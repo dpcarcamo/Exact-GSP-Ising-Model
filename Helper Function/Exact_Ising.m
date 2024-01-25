@@ -1,4 +1,4 @@
-function [meanspin, corr,threepoint] = Exact_Ising(J, h, kT)
+function [meanspin, corr,threepoint, C] = Exact_Ising(J, h, kT)
     %  USING 0,1 FOR SPINS
 
     numSpins = length(h);
@@ -16,6 +16,8 @@ function [meanspin, corr,threepoint] = Exact_Ising(J, h, kT)
     meanspin = zeros(numSpins, 1);
     corr = zeros(numSpins, numSpins);
     threepoint = zeros(numSpins, numSpins,numSpins);
+    Energy = 0;
+    C = 0;
     for i = 1:2^numSpins
         spin_set = decimalToBinaryVector(i -1, numSpins).';
         
@@ -30,9 +32,13 @@ function [meanspin, corr,threepoint] = Exact_Ising(J, h, kT)
         % Multiply the corresponding elements element-wise
         tensor = AA .* BB .* CC;
 
-
         threepoint = threepoint + probs(i)*tensor;
+        En = energyIsing(spin_set, J, h);
+        Energy = Energy + probs(i)*En;
+        C = C + probs(i)*En^2;
+
     end 
-    
+    C = C - Energy^2;
+    C = C / kT^2;
     
 end

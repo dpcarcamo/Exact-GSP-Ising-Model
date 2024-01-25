@@ -76,7 +76,7 @@ for namenum = 3:9
       
     
     count = 1;
-    for j = unique([round(logspace(log10(2),log10(num_nuerons/10), 40))  , round(logspace(log10(num_nuerons/10),log10(num_nuerons), 4))])
+    for j = unique([round(logspace(log10(2),log10(num_nuerons/500), 10))  , round(logspace(log10(num_nuerons/500),log10(num_nuerons/100), 4))])
         i = count;
 
         centerspins = [];
@@ -146,9 +146,9 @@ for namenum = 3:9
             
             % Find Optimal GSP
             
-            tic
+            
             [hGSP, JGSP, HGSP] = find_GSP_update(reduceddatamean, reduceddatacorr);
-            toc
+            
     
             %Entropy Drops
             

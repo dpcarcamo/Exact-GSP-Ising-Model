@@ -16,7 +16,7 @@ function [J, h] = RandomGSPIsing(numSpins)
         [row, col] = find(Jcons);
         randidx = randi(length(row));
 
-        if randi(2) ~= 3 % Connect two nodes
+        if randi(2) ~= 2 % Connect two nodes
             J(row(randidx),i) = randn();
             J(col(randidx),i) = randn(); 
             Jcons(row(randidx),i) = 1;

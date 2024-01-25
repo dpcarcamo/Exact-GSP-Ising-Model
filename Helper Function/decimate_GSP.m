@@ -50,11 +50,11 @@ function [G, D] = decimate_GSP(G0)
         if length(Ni) == 2
             Dtemp(3) = Ni(2);
 
-            
+            prevjkcon = G(Ni(1), Ni(2));
             G(Ni(1), Ni(2)) = 1;
             G(Ni(2), Ni(1)) = 1;
-            prevjkcon = G(Ni(1), Ni(2));
-
+            
+            
         end
         
         % Compute new feasible nodes to remove:
@@ -73,4 +73,5 @@ function [G, D] = decimate_GSP(G0)
         
         
     end
+    
 end

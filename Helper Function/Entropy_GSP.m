@@ -1,5 +1,5 @@
 function H = Entropy_GSP(J,h, ExactMean, ExactCorr)
-    % Currently Incorrect
+    
   
     Jeff = J;
     heff = h;
