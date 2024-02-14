@@ -1,3 +1,4 @@
+% Script to analyze all different iterations of networks.
 clear
 clc
 

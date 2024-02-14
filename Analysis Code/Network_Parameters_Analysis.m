@@ -15,7 +15,7 @@ load("natimg2800_2017-08-20_Fitting.mat")
 newPath = join(folders(1:length(folders)-1),"\");
 addpath(strcat(newPath{1}, '\Helper Function'))
 
-
+%%
 datacorr = datacorr_pseudo;
 
 hind = log(datamean);
@@ -244,7 +244,7 @@ xlabel('Pairwise Distance')
 ylabel('Probability')
 set(gca, "XScale", "log")
 
-%%
+%% Accuracy of Model
 
 [modelmean, modelcorr] = findStats(JGSP,hGSP);
 
@@ -467,7 +467,7 @@ xlabel('Data Corr Coef', 'FontSize',16)
 ylabel('Model Corr Coef', 'FontSize',16)
 title('Full Data Random GSP')
 
-%% Triplets
+%% Triplets Accuracy
 
 tic
 [G,D] = decimate_GSP(JGSP);
