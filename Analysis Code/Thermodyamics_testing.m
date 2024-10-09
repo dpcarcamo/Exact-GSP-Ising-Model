@@ -6,7 +6,7 @@ folders = split(currentPath, '\');
 newPath = join(folders(1:length(folders)-2),"\");
 
 addpath(strcat(newPath{1} , '\Stringer Data\Data'))
-ExpData = matfile('natimg2800_M170717_MP033_2017-08-20.mat');
+%ExpData = matfile('natimg2800_M170717_MP033_2017-08-20.mat');
 
 % Add Helper Function to Path
 newPath = join(folders(1:length(folders)-1),"\");
@@ -14,7 +14,7 @@ addpath(strcat(newPath{1}, '\Helper Function'))
 
 
 
-%
+%%
 Stim = ExpData.stim;
 Response = Stim.resp;
 Spont = Stim.spont;
@@ -121,15 +121,17 @@ listing = dir(strcat(newPath{1} , '\Model Data'));
 
 filename = listing(8).name
 
-%%
+%
 load(filename)
 
+%%
+Ts = linspace(0.1,4);
 count2 = 1;
 for T = Ts
 
     [Energy, Specific] = Thermodynamics(JGSP,hGSP, T);
     nSpecifics(count2, 4) = Specific;
-    count2 = count2 + 1;
+    count2 = count2 + 1
 
 end
 %%
@@ -137,15 +139,16 @@ clc
 
 Ns = [10,100,1000,10144];
 alphas = [0.25,0.5,0.75,1];
+cmap = colormap(winter);
 for c = 1:4
-    plot(Ts,nSpecifics(:,c)/Ns(c), 'Color',[0.2,0.6,0.9, alphas(c)],'LineWidth',2 )
+    plot(Ts,nSpecifics(:,c)/Ns(c), 'Color',cmap(c*60,:),'LineWidth',2 )
     hold on
 end
-plot(ones(100,1),linspace(0,2.5), '--', 'LineWidth',2)
+plot(ones(100,1),linspace(0,2.5), '--', 'Color', [0.6,0.6,0.6],'LineWidth',1)
 hold off
 xlabel('Temperature (k_bT)', 'FontSize',18)
 ylabel('Specific Heat per Neuron (C(T)/N)', 'FontSize',18)
 legend('10','100','1000','10144')
-
+axis square
 
 

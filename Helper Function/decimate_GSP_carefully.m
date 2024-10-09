@@ -24,9 +24,9 @@ function [G, D, Jeff, heff] = decimate_GSP_carefully(G0, h, keep)
     % Find nodes with degree <= 2:
     degs = sum(G);
     inds = intersect(find(degs <= 2), find(degs >= 1));
-    inds(inds==keep(1)) = [];
-    inds(inds==keep(2)) = [];
-    inds(inds==keep(3)) = [];
+    for ig = 1:length(keep)
+        inds(inds==keep(ig)) = [];
+    end
     
     % Loop until there are no more feasible nodes:
     counter = 1;
@@ -78,13 +78,14 @@ function [G, D, Jeff, heff] = decimate_GSP_carefully(G0, h, keep)
 
         inds = spins(logical(binIntersect));
 
-
-        inds(inds==keep(1)) = [];
-        inds(inds==keep(2)) = [];
-        inds(inds==keep(3)) = [];
+        % for ig = 1:length(keep)
+        %     inds(inds==keep(ig)) = [];
+        % end
+        inds = setdiff(inds,keep);
         
         D(counter,:) = Dtemp;
         counter = counter + 1;
         
     end
 end
+

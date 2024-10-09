@@ -8,13 +8,13 @@ newPath = join(folders(1:length(folders)-2),"\");
 
 addpath(strcat(newPath{1} , '\Model Data'))
 
-load("natimg2800_2017-08-20_Fitting.mat")
+
 
 
 % Add Helper Function to Path
 newPath = join(folders(1:length(folders)-1),"\");
 addpath(strcat(newPath{1}, '\Helper Function'))
-
+load("natimg2800_M170717_MP033_2017-08-20_fitted.mat")
 %%
 datacorr = datacorr_pseudo;
 
@@ -99,11 +99,11 @@ yticklabels({' ',' ', ' '})
 figure
 Jtemp = JTree;
 Jtemp(simul == 0) = 0;
-histogram(Jtemp(Jtemp ~= 0),20,'Normalization','pdf');
+histogram(Jtemp(Jtemp ~= 0),30,'Normalization','pdf', EdgeColor='none');
 hold on
 Jtemp = JGSP;
 Jtemp(simul == 0) = 0;
-histogram(Jtemp(Jtemp ~= 0),20, 'Normalization','pdf');
+histogram(Jtemp(Jtemp ~= 0),30, 'Normalization','pdf', EdgeColor='none');
 hold off
 ylabel('Prob. density', 'FontSize',14)
 xlabel('Interactions J_{ij}', 'FontSize',14)
@@ -195,16 +195,17 @@ MIS2 = sort(MIS2);
 MIS2(isnan(MIS2)) = 0;
 
 numbins = 1000;
-[Y, E] = discretize(MIS2,numbins);
+[Y, E] = discretize(MIS2(MIS2>0),numbins);
+
 
 [C,ia,ic] = unique(Y);
 a_counts = accumarray(ic,1);
 
 figure
-loglog(E(Y(ia))/log(2), a_counts/sum(a_counts), '.', MarkerSize=10)
+loglog(E(Y(ia))/log(2), a_counts/sum(a_counts), '.', Color='k', MarkerSize=14)
 xlabel('Mutual Information I_{ij} (bits)')
 ylabel('Probability')
-
+set(gca,'box','off') 
 
 %% Histogram of Topologies
 
@@ -246,7 +247,7 @@ set(gca, "XScale", "log")
 
 %% Accuracy of Model
 
-[modelmean, modelcorr] = findStats(JGSP,hGSP);
+[modelmean, modelcorr] = correlations_GSP_01(JGSP,hGSP);
 
 model_coef = (modelcorr - modelmean.*modelmean.')./sqrt((modelmean-modelmean.^2).*(modelmean-modelmean.^2).');
 
@@ -266,24 +267,29 @@ ylabel('Model Corr Coef', 'FontSize',16)
 
 model_coef = X./sqrt((m-m.^2).*(m-m.^2).');
 
+bJ = JGSP ~= 0;
+bJ = double(bJ);
+metric = distances(graph(bJ));
+metric(metric == 0) = nan;
+metric(metric == Inf) = nan;
+
 figure
 plot(corr_coef(JGSP ~= 0 ),model_coef(JGSP ~= 0), '.')
 hold on
-plot(corr_coef(metrics(:,:,10) ==  2),model_coef(metrics(:,:,10) == 2), '.')
-plot(corr_coef(metrics(:,:,10) ==  3),model_coef(metrics(:,:,10) == 3), '.')
+plot(corr_coef(metric ==  2),model_coef(metric == 2), '.')
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
 ylabel('Model Corr Coef', 'FontSize',16)
-legend('Top. dis. 1','Top. dis. 2','Top. dis. 3','Location','northwest', 'FontSize',14)
+legend('Top. dis. 1','Top. dis. 2','Location','northwest', 'FontSize',14)
 
 %% Plots for 1,2,3 topological distance
 
 
 plotvariance(corr_coef(JGSP ~= 0 ),model_coef(JGSP ~= 0), 100, 'blue')
 hold on
-plotvariance(corr_coef(triu(metrics(:,:,10) ==  2)), model_coef(triu(metrics(:,:,10) == 2)), 11 , 'red')
-plotvariance(corr_coef(triu(metrics(:,:,10) ==  3)), model_coef(triu(metrics(:,:,10) == 3)), 6, [0.9290 0.6940 0.1250])
+plotvariance(corr_coef(triu(metric==  2)), model_coef(triu(metric == 2)), 11 , 'red')
+plotvariance(corr_coef(triu(metric ==  3)), model_coef(triu(metric == 3)), 6, [0.9290 0.6940 0.1250])
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -306,11 +312,17 @@ title('Full Data')
 
 model_coef = X./sqrt((m-m.^2).*(m-m.^2).');
 
+bJ = JTree ~= 0;
+bJ = double(bJ);
+metric = distances(graph(bJ));
+metric(metric == 0) = nan;
+metric(metric == Inf) = nan;
+
 figure
 plot(corr_coef(JTree ~= 0 ),model_coef(JTree ~= 0), '.')
 hold on
-plot(corr_coef(metrics(:,:,8) ==  2),model_coef(metrics(:,:,8) == 2), '.')
-plot(corr_coef(metrics(:,:,8) ==  3),model_coef(metrics(:,:,8) == 3), '.')
+plot(corr_coef(metric ==  2),model_coef(metric == 2), '.')
+plot(corr_coef(metric ==  3),model_coef(metric == 3), '.')
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -322,8 +334,8 @@ legend('Top. dis. 1','Top. dis. 2','Top. dis. 3','Location','northwest', 'FontSi
 figure
 plotvariance(corr_coef(JTree ~= 0 ),model_coef(JTree ~= 0), 100, 'blue')
 hold on
-plotvariance(corr_coef(triu(metrics(:,:,8) ==  2)), model_coef(triu(metrics(:,:,8) == 2)), 11 , 'red')
-plotvariance(corr_coef(triu(metrics(:,:,8) ==  3)), model_coef(triu(metrics(:,:,8) == 3)), 6, [0.9290 0.6940 0.1250])
+plotvariance(corr_coef(triu(metric ==  2)), model_coef(triu(metric == 2)), 11 , 'red')
+plotvariance(corr_coef(triu(metric ==  3)), model_coef(triu(metric == 3)), 6, [0.9290 0.6940 0.1250])
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -347,11 +359,17 @@ title('Full Data Optimal Tree')
 
 model_coef = X./sqrt((m-m.^2).*(m-m.^2).');
 
+bJ = JGSPdist ~= 0;
+bJ = double(bJ);
+metric = distances(graph(bJ));
+metric(metric == 0) = nan;
+metric(metric == Inf) = nan;
+
 figure
 plot(corr_coef(JGSPdist ~= 0 ),model_coef(JGSPdist ~= 0), '.')
 hold on
-plot(corr_coef(metrics(:,:,6) ==  2),model_coef(metrics(:,:,6) == 2), '.')
-plot(corr_coef(metrics(:,:,6) ==  3),model_coef(metrics(:,:,6) == 3), '.')
+plot(corr_coef(metric ==  2),model_coef(metric == 2), '.')
+plot(corr_coef(metric ==  3),model_coef(metric == 3), '.')
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -364,8 +382,8 @@ title('Min Dist. GSP')
 figure
 plotvariance(corr_coef(JGSPdist ~= 0 ),model_coef(JGSPdist ~= 0), 100, 'blue')
 hold on
-plotvariance(corr_coef(triu(metrics(:,:,6) ==  2)), model_coef(triu(metrics(:,:,6) == 2)), 11 , 'red')
-plotvariance(corr_coef(triu(metrics(:,:,6) ==  3)), model_coef(triu(metrics(:,:,6) == 3)), 6, [0.9290 0.6940 0.1250])
+plotvariance(corr_coef(triu(metric ==  2)), model_coef(triu(metric == 2)), 11 , 'red')
+plotvariance(corr_coef(triu(metric ==  3)), model_coef(triu(metric== 3)), 6, [0.9290 0.6940 0.1250])
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -389,11 +407,17 @@ title('Full Data Optimal Min Dist GSP')
 
 model_coef = X./sqrt((m-m.^2).*(m-m.^2).');
 
+
+bJ = JTreedist ~= 0;
+bJ = double(bJ);
+metric = distances(graph(bJ));
+metric(metric == 0) = nan;
+metric(metric == Inf) = nan;
 figure
 plot(corr_coef(JTreedist ~= 0 ),model_coef(JTreedist ~= 0), '.')
 hold on
-plot(corr_coef(metrics(:,:,4) ==  2),model_coef(metrics(:,:,4) == 2), '.')
-plot(corr_coef(metrics(:,:,4) ==  3),model_coef(metrics(:,:,4) == 3), '.')
+plot(corr_coef(metric ==  2),model_coef(metric == 2), '.')
+plot(corr_coef(metric ==  3),model_coef(metric == 3), '.')
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -406,8 +430,8 @@ title('Min Dist. Tree')
 figure
 plotvariance(corr_coef(JTreedist ~= 0 ),model_coef(JTreedist ~= 0), 100, 'blue')
 hold on
-plotvariance(corr_coef(triu(metrics(:,:,4) ==  2)), model_coef(triu(metrics(:,:,4) == 2)), 11 , 'red')
-plotvariance(corr_coef(triu(metrics(:,:,4) ==  3)), model_coef(triu(metrics(:,:,4) == 3)), 6, [0.9290 0.6940 0.1250])
+plotvariance(corr_coef(triu(metric ==  2)), model_coef(triu(metric == 2)), 11 , 'red')
+plotvariance(corr_coef(triu(metric ==  3)), model_coef(triu(metric == 3)), 6, [0.9290 0.6940 0.1250])
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -433,11 +457,18 @@ title('Full Data Optimal Min Dist Tree')
 
 model_coef = X./sqrt((m-m.^2).*(m-m.^2).');
 
+bJ = JGSPrand ~= 0;
+bJ = double(bJ);
+metric = distances(graph(bJ));
+metric(metric == 0) = nan;
+metric(metric == Inf) = nan;
+figure
+
 figure
 plot(corr_coef(JGSPrand ~= 0 ),model_coef(JGSPrand ~= 0), '.')
 hold on
-plot(corr_coef(metrics(:,:,2) ==  2),model_coef(metrics(:,:,2) == 2), '.')
-plot(corr_coef(metrics(:,:,2) ==  3),model_coef(metrics(:,:,2) == 3), '.')
+plot(corr_coef(metric ==  2),model_coef(metric == 2), '.')
+plot(corr_coef(metric ==  3),model_coef(metric == 3), '.')
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -450,8 +481,8 @@ title('Random GSP')
 figure
 plotvariance(corr_coef(JGSPrand ~= 0 ),model_coef(JGSPrand   ~= 0), 100, 'blue')
 hold on
-plotvariance(corr_coef(triu(metrics(:,:,2) ==  2)), model_coef(triu(metrics(:,:,2) == 2)), 11 , 'red')
-plotvariance(corr_coef(triu(metrics(:,:,2) ==  3)), model_coef(triu(metrics(:,:,2) == 3)), 6, [0.9290 0.6940 0.1250])
+plotvariance(corr_coef(triu(metric ==  2)), model_coef(triu(metric == 2)), 11 , 'red')
+plotvariance(corr_coef(triu(metric ==  3)), model_coef(triu(metric == 3)), 6, [0.9290 0.6940 0.1250])
 plot(linspace(-0.1,0.9),linspace(-0.1,0.9),'--', Color='black')
 hold off
 xlabel('Data Corr Coef', 'FontSize',16)
@@ -497,7 +528,7 @@ end
 %%
 plot(Data(:,1),Data(:,2), '.')
 hold on
-plot([min(Data(:,1)),max(Data(:,1))], [min(Data(:,1)),max(Data(:,1))])
+plot([min(Data(:,1)),max(Data(:,1))], [min(Data(:,1)),max(Data(:,1))], '--',Color='k')
 hold off
 xlabel('<x_ix_jx_k> Data')
 ylabel('<x_ix_jx_k> Model')
@@ -654,14 +685,15 @@ avhGSPeff = zeros(3,1);
 for i = 1:length(ia)
     avhGSPeff(i) = mean(hGSPeff(ic == i));
 end
-plot(avhGSPeff,C,'.')
+%plot(avhGSPeff,C,'.')
 hold on
 plot(hGSPeff(I),1./(1+exp(-hGSPeff(I))), 'LineWidth',1)
 plotvariance(avhGSPeff,C,10,'red')
 hold off
 xlabel('heff')
 ylabel('Prob On')
-xlim([-15,15])
+xlim([-8,8])
+ylim([0,1])
 
 %% Bining x axis
 
@@ -670,7 +702,7 @@ figure
 %plot(hGSPeff(I),datamean(I), '.')
 plot(hGSPeff,Pongivenheff,'.')
 hold on
-plot(hGSPeff(I),1./(1+exp(-hGSPeff(I))))
+%plot(hGSPeff(I),1./(1+exp(-hGSPeff(I))))
 plotvariance(hGSPeff,Pongivenheff,15,'red')
 hold off
 xlabel('heff')

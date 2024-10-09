@@ -36,6 +36,8 @@ function [deltaH]  = pointthreeMutual(J, h, mean, corr, numSpins, spins, pair)
         % ----_ %
 
         deltaH(i) = -log(exp(h(i))+1) + Jij*corr(i,j) + Jik*corr(i,k) + h(i)*mean(i) - mean(i)*log(mean(i))- (1-mean(i))*log(1-mean(i)) + (Jjk - Jjkold)*corr(j,k) + (hj - hjold)*mean(j) + (hk- hkold)*mean(k); 
+
+    
     end
 
 end

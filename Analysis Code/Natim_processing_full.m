@@ -14,7 +14,7 @@ newPath = join(folders(1:length(folders)-1),"\");
 addpath(strcat(newPath{1}, '\Helper Function'))
 
 
-for namenum = 3:9
+for namenum = 7
 
     filename = listing(namenum).name;
     

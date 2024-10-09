@@ -32,21 +32,29 @@ num_nuerons = size(Response,1);
 
 randNueron = randi(num_nuerons);
 
-plot(Response(1:30,randNueron))
+plot(Response(1:100,randNueron))
 hold on
-plot((2*sigma(randNueron) + mu(randNueron)).*ones(30,1),'--', 'LineWidth',2)
+plot((2*sigma(randNueron) + mu(randNueron)).*ones(100,1),'--', 'LineWidth',2)
 title('Raw Resonse Time Series')
 xlabel('Time')
 ylabel('Response')
 hold off
+%%
+randNueron = 1557;
 
+plot(Response(1:100,randNueron), 'black',LineWidth=1)
+hold on
+plot(Response(100:200,randNueron)+400,'black',LineWidth=1)
+plot(Response(200:300,randNueron)+800,'black',LineWidth=1)
+hold off
+ylim([-100,1200])
 
 %% Histogram of data
 
-histogram(normResponse, 'Normalization','pdf', 'FaceColor',[0,0,0])
+histogram(normResponse, 'Normalization','probability', 'FaceColor',[0,0,0])
 hold on
 for i = randi(num_nuerons, 1, 10)
-    histogram(normResponse(:,i), 'FaceColor',[0.7,0.7,0.7], 'Normalization','pdf', 'FaceAlpha',0.3)
+    histogram(normResponse(:,i), 'FaceColor',[0.7,0.7,0.7], 'Normalization','probability', 'FaceAlpha',0.3)
 end
 %set(gca ,'YScale', 'log')
 xlim([-1,10])
@@ -59,7 +67,10 @@ hold off
 %% Binarizing Data
 binary = (Response - mu)> 2*sigma;
 %imshow(binary)
+binary = double(binary);
 
+%% Spuedo Data
+binary(end+1,:) = ones(1,size(binary,2))/2;
 
 %% Filter Data
 spiking_patterns = binary.';
@@ -69,7 +80,7 @@ num_nuerons = size(spiking_patterns,1);
 datacorr = spiking_patterns*spiking_patterns.'/num_bins;
 datamean = mean(spiking_patterns.');
 
-datacorr_pseudo = datacorr + ones(num_nuerons)/(num_bins +1);
+datacorr_pseudo = datacorr ;
 
 sum(datamean == 0)
 Hind = sum(Entropy(datamean));

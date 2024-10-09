@@ -1,6 +1,6 @@
 clear all
 clc
-numSpins = 10;
+numSpins = 100;
 
 trials = 10;
 Data = zeros(trials,10);
@@ -71,7 +71,7 @@ disp(mean(Data))
 %% Timing 
 clear
 clc
-trials = [4,10,20,50,100,150,200,500, 1000];
+trials = [20,50,100,150,200,500, 1000];
 
 times = zeros(length(trials), 1);
 
@@ -94,7 +94,7 @@ loglog(trials,times, 'o')
 hold on
 xlabel('Size (number of nodes)', 'FontSize',14)
 ylabel('Time to find network (seconds)', 'FontSize',14)
-c = polyfit(log10(trials(3:end)),log10(times(3:end)),1)
+c = polyfit(log10(trials),log10(times),1)
 loglog(trials,(10^c(2))*trials.^c(1))
 legend('Data', append('Slope = ' , num2str(c(1))), 'Location','northwest', 'Fontsize',14)
 hold off
@@ -211,9 +211,11 @@ C- Specific
 
 clc
 clear
-numSpins = 100;
+numSpins = 400;
 
 [J,h] = RandomGSPIsing(numSpins);
+JGSP = J;
+hGSP = h.';
 
 %%
 Ts = linspace(0.1,3);

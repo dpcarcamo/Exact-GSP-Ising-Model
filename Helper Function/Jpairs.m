@@ -1,8 +1,10 @@
-function [Js, connum] =  Jpairs(J, D)
+function [Js, connum, pairs] =  Jpairs(J, D)
 
     
     Jcon = J ~= 0;
     Jcon = triu(Jcon);
+
+    pairs = zeros(size(Jcon,1),2);
 
 
     Js = zeros(size(Jcon)); % I have no idea why i cant update Jcon
@@ -15,9 +17,13 @@ function [Js, connum] =  Jpairs(J, D)
 
         count = count + 1;
         Js(i, j) = count;
+        pairs(count,1) = i;
+        pairs(count,2) = j;
         if k ~=0 
             count = count + 1;
             Js(i, k) = count; 
+            pairs(count, 1) = i;
+            pairs(count, 2) = k;
         end
 
     end

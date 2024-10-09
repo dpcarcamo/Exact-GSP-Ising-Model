@@ -50,8 +50,6 @@ function [h, J,Ent, NewEnt] = find_GSP_update(mean, corr)
     uniquePairsfull(1,1) = pair(1);
     uniquePairsfull(1,2) = pair(2);
 
-    deltaHs = sparse(deltaHs);
-    J = sparse(J);
     
     count = 2;
     while count < numSpins

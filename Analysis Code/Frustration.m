@@ -12,11 +12,11 @@ listing = dir(strcat(newPath{1} , '\Model Data'));
 
 filename = listing(8).name
 
-load(filename)
+
 % Add Helper Function to Path
 newPath = join(folders(1:length(folders)-1),"\");
 addpath(strcat(newPath{1}, '\Helper Function'))
-
+load(filename)
 
 %% Optimal
 
@@ -114,13 +114,82 @@ for keep = D(1:size(D,1)-1,:).'
     
 end
 
-% histogram(synergy, 'Normalization','probability', EdgeColor='none', FaceAlpha=0.6)
-% 
-% hold off
-% legend('Optimal')
-% 
-% ylabel('Probability')
+histogram(synergy, 'Normalization','probability', EdgeColor='none', FaceAlpha=0.6)
+hold on
 
+
+J = JGSPrand;
+[G,D] = decimate_GSP(J);
+
+frustrations = zeros(num_nuerons-2,1);
+
+Hind = Entropy(datamean);
+
+Mutual_info = MI2(datamean,datacorr_pseudo);
+
+synergy = zeros(num_nuerons-2,1);
+count = 1;
+for keep = D(1:size(D,1)-1,:).'
+    
+    
+    frustrations(count) = J(keep(1),keep(2))*J(keep(2),keep(3))*J(keep(3),keep(1));
+
+    threepoint = sum(binary(:,keep(1)).*(binary(:,keep(2)).*binary(:,keep(3))))/6956;
+
+    Hthree = Entropy_Three(datamean(keep), datacorr_pseudo(keep,keep), threepoint);
+
+    Hdrop = Hind(keep(1)) + Hind(keep(2)) + Hind(keep(3)) - Hthree - Mutual_info(keep(1),keep(2))  - Mutual_info(keep(1),keep(3))  - Mutual_info(keep(3),keep(2));
+
+
+    synergy(count) = Hdrop;
+
+    count = count + 1;
+    
+end
+
+histogram(synergy, 'Normalization','probability', EdgeColor='none', FaceAlpha=0.6)
+
+J = JGSPdist;
+[G,D] = decimate_GSP(J);
+
+frustrations = zeros(num_nuerons-2,1);
+
+Hind = Entropy(datamean);
+
+Mutual_info = MI2(datamean,datacorr_pseudo);
+
+synergy = zeros(num_nuerons-2,1);
+count = 1;
+for keep = D(1:size(D,1)-1,:).'
+    
+    
+    frustrations(count) = J(keep(1),keep(2))*J(keep(2),keep(3))*J(keep(3),keep(1));
+
+    threepoint = sum(binary(:,keep(1)).*(binary(:,keep(2)).*binary(:,keep(3))))/6956;
+
+    Hthree = Entropy_Three(datamean(keep), datacorr_pseudo(keep,keep), threepoint);
+
+    Hdrop = Hind(keep(1)) + Hind(keep(2)) + Hind(keep(3)) - Hthree - Mutual_info(keep(1),keep(2))  - Mutual_info(keep(1),keep(3))  - Mutual_info(keep(3),keep(2));
+
+
+    synergy(count) = Hdrop;
+
+    count = count + 1;
+    
+end
+
+histogram(synergy, 'Normalization','probability', EdgeColor='none', FaceAlpha=0.6)
+
+
+
+
+hold off
+legend('Optimal','Random','Min Dist')
+
+ylabel('Probability')
+xlim([-0.03,0.01])
+
+%%
 figure
 plot(frustrations, synergy, '.', MarkerSize=8, Color=[0 0.4470 0.7410])
 hold on
@@ -184,7 +253,7 @@ plot(frustrations, synergy, '.', MarkerSize=8, Color=[0 0.4470 0.7410])
 hold on
 plot(linspace(-150,100),zeros(100,1),  '--', 'Color',[0.4660 0.6740 0.1880], 'LineWidth',2)
 plot(zeros(100,1),linspace(-0.08,0.02), '--', 'Color',[0.4660 0.6740 0.1880], 'LineWidth',2)
-hold off
+
 ylabel('Synergy')
 xlabel('Frustration')
 
@@ -242,11 +311,11 @@ frustrations = zeros(10^7,1);
 synergy = zeros(10^7,1);
 
 
-for i = 1:10^7
+for i = 1:10^6
 
-    Jxyxyz = randn(1);
-    Jxzxyz = randn(1);
-    Jyzxyz = randn(1);
+    Jxyxyz = 5*randn(1);
+    Jxzxyz = 5*randn(1);
+    Jyzxyz = 5*randn(1);
 
     hxxyz = 2*randn(1);
     hyxyz = 2*randn(1);
@@ -295,12 +364,12 @@ for i = 1:10^7
 
 end
 
-%
+%%
 figure
 plot(frustrations, synergy, '.', MarkerSize=8, Color=[0 0.4470 0.7410])
 hold on
-plot(linspace(-200,200),zeros(100,1),  '--', 'Color',[0.4660 0.6740 0.1880], 'LineWidth',2)
-plot(zeros(100,1),linspace(-0.6,0.2), '--', 'Color',[0.4660 0.6740 0.1880], 'LineWidth',2)
+plot(linspace(-50,50),zeros(100,1),  '--', 'Color',[0.4660 0.6740 0.1880], 'LineWidth',2)
+plot(zeros(100,1),linspace(-0.3,0.2), '--', 'Color',[0.4660 0.6740 0.1880], 'LineWidth',2)
 hold off
 ylabel('Synergy')
 xlabel('Frustration')
@@ -315,7 +384,7 @@ sum((left).*(1-up))
 
 %%
 
-frusts = -logspace(-6,1.2,100);
+frusts = linspace(-30,20,200);
 boundry = zeros(size(frusts));
 count = 1;
 
@@ -329,10 +398,49 @@ end
 
 
 figure
-plot(log10(-frusts), log10(boundry), '.')
+plot(frusts, boundry, '.')
 xlabel('log(Frustration)')
 ylabel('log(Synergy Boundry)')
 
+
+%%
+clc
+
+data = csvread('data.csv');
+%%
+datatemp = flip(data);
+
+boundry = zeros(size(data));
+prev = 0;
+for iter = 1:size(data,1)
+
+    if prev - datatemp(iter,2) < 10^(-4)
+        prev = datatemp(iter,2);
+        boundry(iter,:) = datatemp(iter,:);
+
+    end
+
+end
+
+boundry(boundry(:,2)==0,:) = [];
+
+
+%plot(boundry(:,1),boundry(:,2), '.')
+
+xShade = boundry(:,1);
+yShade = boundry(:,2);
+%plot(frustrations, synergy, '.', MarkerSize=8, Color=[0 0.4470 0.7410])
+plotvariance(frustrations, synergy,15,'b')
+hold on
+%plot(linspace(-150,100),zeros(100,1),  '--', 'Color',[0.4660 0.6740 0.1880], 'LineWidth',2)
+%%plot(zeros(100,1),linspace(-0.08,0.02), '--', 'Color',[0.4660 0.6740 0.1880], 'LineWidth',2)
+
+ylabel('Synergy')
+xlabel('Frustration')
+fill([xShade.',-100,100], [yShade.',1,1], 'r', 'FaceAlpha', 0.3, 'EdgeAlpha',0);
+hold off
+ylim([-0.1,0.2])
+xlim([min(xShade),max(xShade)])
 
 
 function [H] = Entropy_Three(mean, corr, threepoint)

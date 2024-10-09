@@ -8,7 +8,7 @@ newPath = join(folders(1:length(folders)-2),"\");
 
 addpath(strcat(newPath{1} , '\Model Data'))
 
-load("natimg2800_2017-08-20_Fitting.mat")
+load("natimg2800_M160825_MP027_2016-12-14resp.mat")
 
 % Add Helper Function to Path
 newPath = join(folders(1:length(folders)-1),"\");
@@ -17,11 +17,14 @@ addpath(strcat(newPath{1}, '\Helper Function'))
 
 hind = log(datamean);
 
-datacorr_pseudo = datacorr_pseudo - eye(num_nuerons)/(num_bins +1);
 
 Jpair = log(datacorr_pseudo) + log(1 + datacorr_pseudo - datamean - datamean.') - log(datamean - datacorr_pseudo) - log(datamean.' - datacorr_pseudo);
 
 Jpair = real(Jpair);
+
+%%
+
+MI = MI2(datamean,datacorr_pseudo);
 
 %%
 numSpins = length(datamean);
@@ -44,28 +47,95 @@ end
 %%
 
 deltaHs = zeros(numSpins, 100);
+synergys = zeros(numSpins, 100);
+frusts = zeros(numSpins, 100);
 
 tic
-for i = 1:10000
+for i = 1:1000
     
 
     
-    deltaH = pointthreeMutual(Jpair, hind, datamean, datacorr_pseudo, numSpins, 1:numSpins, uniquePairs(randPerms(i),:));
-    
-    
+    [deltaH, frust] = pointthreeMutual(Jpair, hind, datamean, datacorr_pseudo, numSpins, 1:numSpins, uniquePairs(randPerms(i),:));
+    synergy = deltaH - MI(uniquePairs(randPerms(i),1),uniquePairs(randPerms(i),2)) - MI(1:numSpins,uniquePairs(randPerms(i),1))-MI(1:numSpins,uniquePairs(randPerms(i),2));
+
+
     deltaHs(:,i) = deltaH.';
+    synergys(:,i) = synergy.';
+    frusts(:,i) = frust.';
 
 end
 toc
 %%
 
-deltaHs = sort(reshape(deltaHs,[],1), 'descend');
+[deltaHsSorted, I] = sort(reshape(deltaHs,[],1), 'descend');
 
-loglog(1:length(deltaHs),deltaHs, '.')
+loglog(1:length(deltaHsSorted),deltaHsSorted, '.', MarkerSize=8)
 xlabel('Rank')
 ylabel('Entropy Drop GSP')
 
-function [deltaH]  = pointthreeMutual(J, h, datamean, datacorr, numSpins, spins, pair)
+%%
+
+[synergysSorted, Isyn] = sort(reshape(synergys,[],1), 'descend');
+
+loglog(1:length(synergysSorted),abs(synergysSorted), '.', MarkerSize=8)
+
+
+xlabel('Rank')
+ylabel('Absolute Value of Synergys')
+legend('Synergy')
+
+%%
+
+% Example data
+x = 1:length(synergysSorted);
+y = abs(synergysSorted); % Random y values
+frust = sign(-frusts(Isyn)); % Values to determine color
+
+% Define colormap
+colormap('winter');
+
+% Plot
+scatter(x, y, 8, frust, 'filled');
+set(gca, 'XScale', 'log', 'YScale', 'log'); % Set log scale for both axes
+a = colorbar; % Add colorbar to show the mapping
+ylabel(a, 'Frustration', 'FontSize',15)
+
+xlabel('Rank', 'FontSize',15);
+ylabel('Synergy', 'FontSize',15);
+title('Scatter plot with log-log scale and color based on "frust" variable', 'FontSize',15);
+
+
+%%
+
+synergysreshape = reshape(synergys,[],1);
+[synergysSorted, Isyn] = sort(reshape(synergys,[],1), 'descend');
+
+loglog(1:length(synergysreshape),abs(synergysreshape(I)), '.', MarkerSize=8)
+hold on
+loglog(1:length(synergysSorted),abs(synergysSorted), '.', MarkerSize=8)
+hold off
+
+xlabel('Rank')
+ylabel('Absolute Value of Synergys')
+legend('Synergy Ranked by DeltaH', 'Synergy')
+
+%%
+
+
+deltaHsreshape = reshape(deltaHs,[],1);
+[deltaHsSorted, IH]= sort(reshape(deltaHs,[],1), 'descend');
+
+loglog(1:length(deltaHsreshape),abs(deltaHsreshape(Isyn)), '.', MarkerSize=8)
+hold on
+loglog(1:length(deltaHsSorted),abs(deltaHsSorted), '.', MarkerSize=8)
+loglog(1:length(deltaHsSorted),abs(deltaHsSorted), '.', MarkerSize=8)
+hold off
+
+xlabel('Rank')
+ylabel('Absolute Value of Synergys')
+legend('DeltaH Ranked by Synergy', 'DeltaH')
+
+function [deltaH, frusts]  = pointthreeMutual(J, h, datamean, datacorr, numSpins, spins, pair)
     % Calculate the DKL drop for a set of spins connecting to a pair of
     % spins
 
@@ -77,6 +147,7 @@ function [deltaH]  = pointthreeMutual(J, h, datamean, datacorr, numSpins, spins,
     h(k) = log(datamean(k) - datacorr(j,k)) - log(1+datacorr(j,k) - datamean(j) - datamean(k));
     
     
+    frusts = zeros(numSpins,1);
     for i = spins
         
         if i == j || i == k
@@ -108,6 +179,7 @@ function [deltaH]  = pointthreeMutual(J, h, datamean, datacorr, numSpins, spins,
         % ---- %
 
         deltaH(i) = -log(exp(h(i))+1) + Jij*datacorr(i,j) + Jik*datacorr(i,k) + h(i)*datamean(i) - datamean(i)*log(datamean(i))- (1-datamean(i))*log(1-datamean(i)) + (Jjk - Jjkold)*datacorr(j,k) + (hj - hjold)*datamean(j) + (hk- hkold)*datamean(k); 
+        frusts(i) = Jjk*Jik*Jij;
     end
 
 end
